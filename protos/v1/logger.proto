@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package v1;
+
+enum LogMessageTag{
+    COMMON = 0; // 一般的日志，不需要触发日志警告通知
+    ACCIDENT = 1; // 较为重大的事故，需要处罚警告通知
+}
+
+message LogMessageRequest{
+     float version = 1;
+     LogMessageTag tag = 2;
+     string message = 3;
+}
+
+
+message LogMessageReply{
+    float version = 1;
+    int32 status = 2;
+    bytes payload = 3;
+}
+
+
+service Logger{
+    rpc Commit(LogMessageRequest)returns(LogMessageReply){}
+}

@@ -1,0 +1,4 @@
+## 生成proto包
+```
+   protoc -I=v1/ --go_out=plugins=grpc:v1/ v1/logger.proto
+```
