@@ -24,7 +24,7 @@ const ClientProtocol = 1.0
 func init() {
 	operatorV1 := func(module string) (io.Writer, error) {
 		var res io.Writer
-		if connect, err := grpc.DialContext(sdkCtx, loggerServerAddr); err != nil {
+		if connect, err := grpc.DialContext(sdkCtx, loggerServerAddr, grpc.WithInsecure()); err != nil {
 			return nil, err
 		} else {
 			ctx, _ := context.WithCancel(sdkCtx)

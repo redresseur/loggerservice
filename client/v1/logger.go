@@ -21,6 +21,7 @@ func (io *LoggerIOV1)Write(p []byte) (n int, err error){
 		Version: 1.0,
 		Message: p,
 		Tag: v1.LogMessageTag_COMMON,
+		LoggerId: io.ctx.Value("LoggerUUID").(string),
 	}
 
 	if rsp, err :=io.grpcClient.Commit(io.ctx, &msg); err != nil{
@@ -38,7 +39,7 @@ func (io *LoggerIOV1)Accident(err error) error {
 	msg := v1.Message{
 		Version: 1.0,
 		Message: []byte(err.Error()),
-		Tag: v1.LogMessageTag_COMMON,
+		Tag: v1.LogMessageTag_ACCIDENT,
 	}
 
 	if rsp, err :=io.grpcClient.Commit(io.ctx, &msg); err != nil{
