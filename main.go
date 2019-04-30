@@ -71,6 +71,7 @@ func main() {
 			panic(err)
 		}
 	case "tcp":
+		fallthrough
 	case "tcp6":
 		listener, err = net.Listen(conf.NetWork, conf.GrpcServerAddr)
 		if err != nil {
