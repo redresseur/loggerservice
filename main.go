@@ -1,30 +1,23 @@
 package main
 
 import (
-	"github.com/redresseur/loggerservice/protos/v1"
-	"context"
-	"google.golang.org/grpc"
 	"net"
+
+	"github.com/redresseur/loggerservice/impl"
+	v1 "github.com/redresseur/loggerservice/protos/v1"
+	"google.golang.org/grpc"
 )
 
-type LoggerServerImpl struct {
-
-}
-
-func (ls *LoggerServerImpl)Commit(context.Context, *v1.LogMessageRequest) (*v1.LogMessageReply, error)  {
-	return nil, nil
-}
-
-func main()  {
+func main() {
 	loggerSrv := grpc.NewServer()
-	v1.RegisterLoggerServer(loggerSrv, &LoggerServerImpl{})
-	unixAddr, err := net.ResolveUnixAddr("unix", "/tmp/logger.sock");
-	if  err != nil{
+	v1.RegisterLoggerServer(loggerSrv, &impl.LoggerServerImpl{})
+	unixAddr, err := net.ResolveUnixAddr("unix", "/tmp/logger.sock")
+	if err != nil {
 		panic(err)
 	}
 
 	listener, err := net.ListenUnix("unix", unixAddr)
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 
