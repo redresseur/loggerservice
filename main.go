@@ -2,13 +2,21 @@ package main
 
 import (
 	implProtocol "github.com/redresseur/loggerservice/impl/protocol"
+	implV1 "github.com/redresseur/loggerservice/impl/v1"
 	"github.com/redresseur/loggerservice/protos/protocol"
 	"github.com/redresseur/loggerservice/protos/v1"
-	"net"
-
-	implV1 "github.com/redresseur/loggerservice/impl/v1"
 	"google.golang.org/grpc"
+	"net"
+	"net/http"
 )
+
+// 开启一个http服务，用于浏览日志
+func startHttpService(path string)  {
+	go func() {
+		http.Handle("/logs", http.StripPrefix("/logs", http.FileServer(http.Dir(path))))
+		http.ListenAndServe(":10030", nil)
+	}()
+}
 
 func main() {
 	loggerSrv := grpc.NewServer()
