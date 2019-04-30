@@ -130,17 +130,17 @@ func init() {
 func init() { proto.RegisterFile("protocol.proto", fileDescriptor_2bc2336598a3f7e0) }
 
 var fileDescriptor_2bc2336598a3f7e0 = []byte{
-	// 155 bytes of a gzipped FileDescriptorProto
+	// 150 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2b, 0x28, 0xca, 0x2f,
 	0xc9, 0x4f, 0xce, 0xcf, 0xd1, 0x03, 0x33, 0x84, 0x38, 0x60, 0x7c, 0xa5, 0x30, 0x2e, 0xfe, 0x00,
 	0x28, 0x3b, 0x28, 0xb5, 0xb0, 0x34, 0xb5, 0xb8, 0x44, 0x48, 0x93, 0x4b, 0xa0, 0xb8, 0xb4, 0xa0,
 	0x20, 0xbf, 0xa8, 0x24, 0x1e, 0xa6, 0x4c, 0x82, 0x51, 0x81, 0x59, 0x83, 0x29, 0x88, 0x1f, 0x2a,
 	0x0e, 0xd3, 0x21, 0x24, 0xc1, 0xc5, 0x5e, 0x90, 0x58, 0x99, 0x93, 0x9f, 0x98, 0x22, 0xc1, 0xa4,
 	0xc0, 0xa8, 0xc1, 0x13, 0x04, 0xe3, 0xa2, 0x9a, 0x5b, 0x5c, 0x90, 0x9f, 0x97, 0x42, 0x15, 0x73,
-	0x8d, 0x42, 0xb9, 0xd8, 0x7c, 0xf2, 0xd3, 0xd3, 0x53, 0x8b, 0x84, 0xbc, 0xb9, 0x04, 0xdd, 0x52,
-	0x4b, 0x92, 0x33, 0x60, 0x9a, 0x3c, 0xf3, 0xd2, 0xf2, 0x85, 0x24, 0xf5, 0xe0, 0x3e, 0x45, 0xf3,
-	0x96, 0x14, 0x56, 0x29, 0xb0, 0xcb, 0x94, 0x18, 0x92, 0xd8, 0xc0, 0x72, 0xc6, 0x80, 0x00, 0x00,
-	0x00, 0xff, 0xff, 0xb3, 0xa5, 0x87, 0x79, 0x29, 0x01, 0x00, 0x00,
+	0x8d, 0xc2, 0xb9, 0x38, 0xe0, 0xaa, 0xbc, 0xb9, 0x04, 0xdd, 0x52, 0x4b, 0x92, 0x33, 0x60, 0x02,
+	0x9e, 0x79, 0x69, 0xf9, 0x42, 0x92, 0x7a, 0x70, 0xbf, 0xa2, 0x79, 0x4c, 0x0a, 0xab, 0x14, 0xd8,
+	0x6d, 0x4a, 0x0c, 0x49, 0x6c, 0x60, 0x39, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff, 0x6d, 0x8c,
+	0x21, 0x26, 0x2b, 0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -151,72 +151,72 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// LoggerClient is the client API for Logger service.
+// ProtocolClient is the client API for Protocol service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type LoggerClient interface {
+type ProtocolClient interface {
 	FetchProtocolInfo(ctx context.Context, in *ProtocolRequest, opts ...grpc.CallOption) (*ProtocolRespond, error)
 }
 
-type loggerClient struct {
+type protocolClient struct {
 	cc *grpc.ClientConn
 }
 
-func NewLoggerClient(cc *grpc.ClientConn) LoggerClient {
-	return &loggerClient{cc}
+func NewProtocolClient(cc *grpc.ClientConn) ProtocolClient {
+	return &protocolClient{cc}
 }
 
-func (c *loggerClient) FetchProtocolInfo(ctx context.Context, in *ProtocolRequest, opts ...grpc.CallOption) (*ProtocolRespond, error) {
+func (c *protocolClient) FetchProtocolInfo(ctx context.Context, in *ProtocolRequest, opts ...grpc.CallOption) (*ProtocolRespond, error) {
 	out := new(ProtocolRespond)
-	err := c.cc.Invoke(ctx, "/protocol.Logger/FetchProtocolInfo", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/protocol.Protocol/FetchProtocolInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// LoggerServer is the server API for Logger service.
-type LoggerServer interface {
+// ProtocolServer is the server API for Protocol service.
+type ProtocolServer interface {
 	FetchProtocolInfo(context.Context, *ProtocolRequest) (*ProtocolRespond, error)
 }
 
-// UnimplementedLoggerServer can be embedded to have forward compatible implementations.
-type UnimplementedLoggerServer struct {
+// UnimplementedProtocolServer can be embedded to have forward compatible implementations.
+type UnimplementedProtocolServer struct {
 }
 
-func (*UnimplementedLoggerServer) FetchProtocolInfo(ctx context.Context, req *ProtocolRequest) (*ProtocolRespond, error) {
+func (*UnimplementedProtocolServer) FetchProtocolInfo(ctx context.Context, req *ProtocolRequest) (*ProtocolRespond, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FetchProtocolInfo not implemented")
 }
 
-func RegisterLoggerServer(s *grpc.Server, srv LoggerServer) {
-	s.RegisterService(&_Logger_serviceDesc, srv)
+func RegisterProtocolServer(s *grpc.Server, srv ProtocolServer) {
+	s.RegisterService(&_Protocol_serviceDesc, srv)
 }
 
-func _Logger_FetchProtocolInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Protocol_FetchProtocolInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ProtocolRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LoggerServer).FetchProtocolInfo(ctx, in)
+		return srv.(ProtocolServer).FetchProtocolInfo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protocol.Logger/FetchProtocolInfo",
+		FullMethod: "/protocol.Protocol/FetchProtocolInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LoggerServer).FetchProtocolInfo(ctx, req.(*ProtocolRequest))
+		return srv.(ProtocolServer).FetchProtocolInfo(ctx, req.(*ProtocolRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Logger_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "protocol.Logger",
-	HandlerType: (*LoggerServer)(nil),
+var _Protocol_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "protocol.Protocol",
+	HandlerType: (*ProtocolServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "FetchProtocolInfo",
-			Handler:    _Logger_FetchProtocolInfo_Handler,
+			Handler:    _Protocol_FetchProtocolInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

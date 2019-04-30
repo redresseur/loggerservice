@@ -36,7 +36,7 @@ func main() {
 	loggerSrv := grpc.NewServer()
 
 	protocolHandler := implProtocol.ProtocolServerImpl{}
-	protocol.RegisterLoggerServer(loggerSrv, &protocolHandler)
+	protocol.RegisterProtocolServer(loggerSrv, &protocolHandler)
 
 	conf, err := getConfig()
 	if err != nil {
@@ -48,7 +48,7 @@ func main() {
 		panic(err)
 	}
 
-	v1.RegisterLoggerServer(loggerSrv, loggerV1Handler)
+	v1.RegisterLoggerV1Server(loggerSrv, loggerV1Handler)
 
 	var listener net.Listener
 	switch conf.NetWork {

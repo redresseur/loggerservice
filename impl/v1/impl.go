@@ -16,7 +16,7 @@ type LoggerServerImplV1 struct {
 	tempPath string
 }
 
-func NewLoggerServerImplV1(conf *LoggerSerivceConfV1) (v1.LoggerServer, error) {
+func NewLoggerServerImplV1(conf *LoggerSerivceConfV1) (v1.LoggerV1Server, error) {
 	// create the rootdir
 	if _, err := ioutils.CreateDirIfMissing(conf.RootDir); err != nil {
 		return nil, err
@@ -78,6 +78,7 @@ func (ls *LoggerServerImplV1) Commit(ctx context.Context, message *v1.Message) (
 		logger = v.(*LoggerV1)
 	}
 
+	message.LoggerId = ctx.Value("LoggerUUID").(string)
 	if err := logger.write(message, logger); err != nil {
 		return ErrorRespond(400, err), nil
 	}

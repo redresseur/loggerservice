@@ -11,7 +11,7 @@ message Message{
      float version = 1;
      LogMessageTag tag = 2;
      string logger_id = 3;
-     string message = 4;
+     bytes message = 4;
 }
 
 message RegistryRespond{
@@ -30,7 +30,7 @@ message Respond{
     bytes payload = 3;
 }
 
-service Logger{
+service LoggerV1{
     rpc Registry(ClientInfo)returns(Respond){}
     rpc Commit(Message)returns(Respond){}
 }

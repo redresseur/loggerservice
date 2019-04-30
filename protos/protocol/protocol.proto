@@ -17,6 +17,6 @@ message ProtocolRespond{
 }
 
 
-service Logger{
+service Protocol{
     rpc FetchProtocolInfo(ProtocolRequest)returns(ProtocolRespond){}
 }
