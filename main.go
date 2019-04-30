@@ -22,11 +22,18 @@ func startHTTPService(httpServerAddr, rootPath string) {
 
 func getConfig() (*implV1.LoggerSerivceConfV1, error) {
 	// default config
+	// defaultConf := implV1.LoggerSerivceConfV1{
+	// 	GrpcServerAddr: "/tmp/logger.sock",
+	// 	HttpServerAddr: ":10030",
+	// 	RootDir:        "/tmp/logger",
+	// 	NetWork:        "unix",
+	// }
+
 	defaultConf := implV1.LoggerSerivceConfV1{
-		GrpcServerAddr: "/tmp/logger.sock",
+		GrpcServerAddr: ":10040",
 		HttpServerAddr: ":10030",
 		RootDir:        "/tmp/logger",
-		NetWork:        "unix",
+		NetWork:        "tcp",
 	}
 
 	return &defaultConf, nil
