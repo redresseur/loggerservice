@@ -1,21 +1,35 @@
 package main
 
 import (
+	"net"
+	"net/http"
+	"os"
+
 	implProtocol "github.com/redresseur/loggerservice/impl/protocol"
 	implV1 "github.com/redresseur/loggerservice/impl/v1"
 	"github.com/redresseur/loggerservice/protos/protocol"
-	"github.com/redresseur/loggerservice/protos/v1"
+	v1 "github.com/redresseur/loggerservice/protos/v1"
 	"google.golang.org/grpc"
-	"net"
-	"net/http"
 )
 
-// 开启一个http服务，用于浏览日志
-func startHttpService(path string)  {
+// startHttpService 开启一个http服务，用于浏览日志
+func startHTTPService(httpServerAddr, rootPath string) {
 	go func() {
-		http.Handle("/logs", http.StripPrefix("/logs", http.FileServer(http.Dir(path))))
-		http.ListenAndServe(":10030", nil)
+		http.Handle("/logs", http.StripPrefix("/logs", http.FileServer(http.Dir(rootPath))))
+		http.ListenAndServe(httpServerAddr, nil)
 	}()
+}
+
+func getConfig() (*implV1.LoggerSerivceConfV1, error) {
+	// default config
+	defaultConf := implV1.LoggerSerivceConfV1{
+		GrpcServerAddr: "/tmp/logger.sock",
+		HttpServerAddr: ":10030",
+		RootDir:        "/tmp/logger",
+		NetWork:        "unix",
+	}
+
+	return &defaultConf, nil
 }
 
 func main() {
@@ -24,18 +38,39 @@ func main() {
 	protocolHandler := implProtocol.ProtocolServerImpl{}
 	protocol.RegisterLoggerServer(loggerSrv, &protocolHandler)
 
-	loggerV1Handler := implV1.LoggerServerImplV1{}
-	v1.RegisterLoggerServer(loggerSrv, &loggerV1Handler)
-
-	unixAddr, err := net.ResolveUnixAddr("unix", "/tmp/logger.sock")
+	conf, err := getConfig()
 	if err != nil {
 		panic(err)
 	}
 
-	listener, err := net.ListenUnix("unix", unixAddr)
+	loggerV1Handler, err := implV1.NewLoggerServerImplV1(conf)
 	if err != nil {
 		panic(err)
 	}
 
+	v1.RegisterLoggerServer(loggerSrv, loggerV1Handler)
+
+	var listener net.Listener
+	switch conf.NetWork {
+	case "unix":
+		os.Remove(conf.GrpcServerAddr)
+		unixAddr, err := net.ResolveUnixAddr("unix", conf.GrpcServerAddr) //"/tmp/logger.sock"
+		if err != nil {
+			panic(err)
+		}
+
+		listener, err = net.ListenUnix("unix", unixAddr)
+		if err != nil {
+			panic(err)
+		}
+	case "tcp":
+	case "tcp6":
+		listener, err = net.Listen(conf.NetWork, conf.GrpcServerAddr)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	startHTTPService(conf.HttpServerAddr, conf.RootDir)
 	loggerSrv.Serve(listener)
 }
