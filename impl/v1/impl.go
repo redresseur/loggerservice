@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
@@ -31,9 +32,9 @@ func NewLoggerServerImplV1(conf *LoggerSerivceConfV1) (v1.LoggerV1Server, error)
 func (ls *LoggerServerImplV1) loggerPath(path string) (string, error) {
 	path = filepath.Join(ls.config.RootDir, path)
 	if _, err := ioutils.CreateDirIfMissing(path); err != nil {
-		return path, nil
+		return "", err
 	}
-	return "", nil
+	return path, nil
 }
 
 func (ls *LoggerServerImplV1) Registry(ctx context.Context, req *v1.ClientInfo) (*v1.Respond, error) {
@@ -78,11 +79,18 @@ func (ls *LoggerServerImplV1) Commit(ctx context.Context, message *v1.Message) (
 		logger = v.(*LoggerV1)
 	}
 
-	message.LoggerId = ctx.Value("LoggerUUID").(string)
+	//message.LoggerId = ctx.Value("LoggerUUID").(string)
 	if err := logger.write(message, logger); err != nil {
 		return ErrorRespond(400, err), nil
 	}
 
 	// TODO: 重大Accident 通知警告
-	return nil, nil
+	if message.GetTag() == v1.LogMessageTag_ACCIDENT {
+		fmt.Printf("ACCIDNET %s", string(message.GetMessage()))
+	}
+
+	return &v1.Respond{
+		Status:  200,
+		Version: ProtocolVersion,
+	}, nil
 }

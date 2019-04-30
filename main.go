@@ -43,6 +43,7 @@ func main() {
 	loggerSrv := grpc.NewServer()
 
 	protocolHandler := implProtocol.ProtocolServerImpl{}
+	implProtocol.RegistryProtocol(&protocolHandler, implV1.ProtocolVersion)
 	protocol.RegisterProtocolServer(loggerSrv, &protocolHandler)
 
 	conf, err := getConfig()
