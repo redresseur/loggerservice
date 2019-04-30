@@ -1,0 +1,6 @@
+## 生成proto包
+```
+   protoc -I=v1/ --go_out=plugins=grpc:v1/ v1/logger.proto
+   protoc -I=rpc/ --go_out=plugins=grpc:rpc/ rpc/rpc.proto
+   protoc -I=protocol/ --go_out=plugins=grpc:protocol/ protocol/protocol.proto
+```

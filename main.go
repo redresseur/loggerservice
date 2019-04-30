@@ -1,16 +1,24 @@
 package main
 
 import (
+	implProtocol "github.com/redresseur/loggerservice/impl/protocol"
+	"github.com/redresseur/loggerservice/protos/protocol"
+	"github.com/redresseur/loggerservice/protos/v1"
 	"net"
 
-	"github.com/redresseur/loggerservice/impl"
-	v1 "github.com/redresseur/loggerservice/protos/v1"
+	implV1 "github.com/redresseur/loggerservice/impl/v1"
 	"google.golang.org/grpc"
 )
 
 func main() {
 	loggerSrv := grpc.NewServer()
-	v1.RegisterLoggerServer(loggerSrv, &impl.LoggerServerImpl{})
+
+	protocolHandler := implProtocol.ProtocolServerImpl{}
+	protocol.RegisterLoggerServer(loggerSrv, &protocolHandler)
+
+	loggerV1Handler := implV1.LoggerServerImplV1{}
+	v1.RegisterLoggerServer(loggerSrv, &loggerV1Handler)
+
 	unixAddr, err := net.ResolveUnixAddr("unix", "/tmp/logger.sock")
 	if err != nil {
 		panic(err)

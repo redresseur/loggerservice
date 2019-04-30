@@ -7,20 +7,30 @@ enum LogMessageTag{
     ACCIDENT = 1; // 较为重大的事故，需要处罚警告通知
 }
 
-message LogMessageRequest{
+message Message{
      float version = 1;
      LogMessageTag tag = 2;
-     string message = 3;
+     string logger_id = 3;
+     string message = 4;
 }
 
+message RegistryRespond{
+     float version = 1;
+     string logger_id = 3; //服务端为客户端生成的id，写入message时需要携带
+}
 
-message LogMessageReply{
+message ClientInfo{
+    float version = 1;
+    string client_id = 2; // 客户端注册的id, 会为它生成一个文件夹，所有的log file都会保存在下面;
+}
+
+message Respond{
     float version = 1;
     int32 status = 2;
     bytes payload = 3;
 }
 
-
 service Logger{
-    rpc Commit(LogMessageRequest)returns(LogMessageReply){}
+    rpc Registry(ClientInfo)returns(Respond){}
+    rpc Commit(Message)returns(Respond){}
 }

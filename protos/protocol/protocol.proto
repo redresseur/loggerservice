@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package protocol;
+
+// 当客户端新接入时要与服务端进行协议磋商
+// 根据当前服务端的支持的版本，最终决定使用哪个版进行通信
+message ProtocolRequest{
+    repeated float support_protocol = 1; // 当前支持的协议版本
+    // 其他
+    bytes payload = 2;
+}
+
+message ProtocolRespond{
+   repeated float support_protocol = 1; // 当前支持的协议版本
+   // 其他
+   bytes payload = 2;
+}
+
+
+service Logger{
+    rpc FetchProtocolInfo(ProtocolRequest)returns(ProtocolRespond){}
+}
