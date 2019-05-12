@@ -9,11 +9,70 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 var(
 	ErrFileIsExists = errors.New("the file had been exists")
 )
+
+type MutexIO interface{
+	Lock()
+	Unlock()
+	Set(writer interface{})
+	Write(p []byte) (n int, err error)
+}
+
+type FileMutexIO struct {
+	*os.File
+	*sync.Mutex
+	autLock bool
+	path string
+}
+
+func NewFileMutexIO(autoLock bool) *FileMutexIO  {
+	return &FileMutexIO{
+		Mutex: &sync.Mutex{},
+		autLock:autoLock,
+	}
+}
+
+func (fm *FileMutexIO) Set(writer interface{}) {
+	if fm.autLock{
+		fm.Lock()
+		defer fm.Unlock()
+	}
+
+	if fd, isOk := writer.(*os.File); isOk{
+		fm.File = fd
+	}
+}
+
+func (fm *FileMutexIO)Write(p []byte) (n int, err error){
+	if fm.autLock{
+		fm.Lock()
+		fm.Unlock()
+	}
+
+	return fm.File.Write(p)
+}
+
+func (fm *FileMutexIO)SetPath(path string)  {
+	if fm.autLock{
+		fm.Lock()
+		defer fm.Unlock()
+	}
+
+	fm.path = path
+}
+
+func (fm *FileMutexIO)Path() string {
+	if fm.autLock{
+		fm.Lock()
+		defer fm.Unlock()
+	}
+	return  fm.path
+}
 
 // FileExists checks whether the given file exists.
 // If the file exists, this method also returns the size of the file.
@@ -133,4 +192,12 @@ func SetFileData(fName string, data []byte, recover bool)(string, error)  {
 	}
 
 	return fName, nil
+}
+
+func TempDir() string {
+	if temp := os.Getenv("TEMP"); temp != ""{
+		return temp
+	}
+
+	return "/tmp"
 }

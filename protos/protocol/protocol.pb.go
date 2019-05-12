@@ -8,8 +8,6 @@ import (
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
 	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -122,25 +120,109 @@ func (m *ProtocolRespond) GetPayload() []byte {
 	return nil
 }
 
+type Ping struct {
+	Counter              int64    `protobuf:"varint,1,opt,name=counter,proto3" json:"counter,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Ping) Reset()         { *m = Ping{} }
+func (m *Ping) String() string { return proto.CompactTextString(m) }
+func (*Ping) ProtoMessage()    {}
+func (*Ping) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2bc2336598a3f7e0, []int{2}
+}
+
+func (m *Ping) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Ping.Unmarshal(m, b)
+}
+func (m *Ping) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Ping.Marshal(b, m, deterministic)
+}
+func (m *Ping) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Ping.Merge(m, src)
+}
+func (m *Ping) XXX_Size() int {
+	return xxx_messageInfo_Ping.Size(m)
+}
+func (m *Ping) XXX_DiscardUnknown() {
+	xxx_messageInfo_Ping.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Ping proto.InternalMessageInfo
+
+func (m *Ping) GetCounter() int64 {
+	if m != nil {
+		return m.Counter
+	}
+	return 0
+}
+
+type Pong struct {
+	Counter              int64    `protobuf:"varint,1,opt,name=counter,proto3" json:"counter,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Pong) Reset()         { *m = Pong{} }
+func (m *Pong) String() string { return proto.CompactTextString(m) }
+func (*Pong) ProtoMessage()    {}
+func (*Pong) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2bc2336598a3f7e0, []int{3}
+}
+
+func (m *Pong) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Pong.Unmarshal(m, b)
+}
+func (m *Pong) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Pong.Marshal(b, m, deterministic)
+}
+func (m *Pong) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Pong.Merge(m, src)
+}
+func (m *Pong) XXX_Size() int {
+	return xxx_messageInfo_Pong.Size(m)
+}
+func (m *Pong) XXX_DiscardUnknown() {
+	xxx_messageInfo_Pong.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Pong proto.InternalMessageInfo
+
+func (m *Pong) GetCounter() int64 {
+	if m != nil {
+		return m.Counter
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterType((*ProtocolRequest)(nil), "protocol.ProtocolRequest")
 	proto.RegisterType((*ProtocolRespond)(nil), "protocol.ProtocolRespond")
+	proto.RegisterType((*Ping)(nil), "protocol.Ping")
+	proto.RegisterType((*Pong)(nil), "protocol.Pong")
 }
 
 func init() { proto.RegisterFile("protocol.proto", fileDescriptor_2bc2336598a3f7e0) }
 
 var fileDescriptor_2bc2336598a3f7e0 = []byte{
-	// 150 bytes of a gzipped FileDescriptorProto
+	// 211 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2b, 0x28, 0xca, 0x2f,
 	0xc9, 0x4f, 0xce, 0xcf, 0xd1, 0x03, 0x33, 0x84, 0x38, 0x60, 0x7c, 0xa5, 0x30, 0x2e, 0xfe, 0x00,
 	0x28, 0x3b, 0x28, 0xb5, 0xb0, 0x34, 0xb5, 0xb8, 0x44, 0x48, 0x93, 0x4b, 0xa0, 0xb8, 0xb4, 0xa0,
 	0x20, 0xbf, 0xa8, 0x24, 0x1e, 0xa6, 0x4c, 0x82, 0x51, 0x81, 0x59, 0x83, 0x29, 0x88, 0x1f, 0x2a,
 	0x0e, 0xd3, 0x21, 0x24, 0xc1, 0xc5, 0x5e, 0x90, 0x58, 0x99, 0x93, 0x9f, 0x98, 0x22, 0xc1, 0xa4,
-	0xc0, 0xa8, 0xc1, 0x13, 0x04, 0xe3, 0xa2, 0x9a, 0x5b, 0x5c, 0x90, 0x9f, 0x97, 0x42, 0x15, 0x73,
-	0x8d, 0xc2, 0xb9, 0x38, 0xe0, 0xaa, 0xbc, 0xb9, 0x04, 0xdd, 0x52, 0x4b, 0x92, 0x33, 0x60, 0x02,
-	0x9e, 0x79, 0x69, 0xf9, 0x42, 0x92, 0x7a, 0x70, 0xbf, 0xa2, 0x79, 0x4c, 0x0a, 0xab, 0x14, 0xd8,
-	0x6d, 0x4a, 0x0c, 0x49, 0x6c, 0x60, 0x39, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff, 0x6d, 0x8c,
-	0x21, 0x26, 0x2b, 0x01, 0x00, 0x00,
+	0xc0, 0xa8, 0xc1, 0x13, 0x04, 0xe3, 0xa2, 0x9a, 0x5b, 0x5c, 0x90, 0x9f, 0x97, 0x42, 0x1d, 0x73,
+	0x15, 0xb8, 0x58, 0x02, 0x32, 0xf3, 0xd2, 0x41, 0x2a, 0x92, 0xf3, 0x4b, 0xf3, 0x4a, 0x52, 0x8b,
+	0x24, 0x18, 0x15, 0x18, 0x35, 0x98, 0x83, 0x60, 0x5c, 0xb0, 0x8a, 0x7c, 0x7c, 0x2a, 0x8c, 0xc2,
+	0xb9, 0x38, 0xe0, 0x36, 0x79, 0x73, 0x09, 0xba, 0xa5, 0x96, 0x24, 0x67, 0xc0, 0x04, 0x3c, 0xf3,
+	0xd2, 0xf2, 0x85, 0x24, 0xf5, 0xe0, 0xe1, 0x85, 0x16, 0x38, 0x52, 0x58, 0xa5, 0xc0, 0xfe, 0x53,
+	0x62, 0x30, 0x32, 0xe7, 0xe2, 0x00, 0x39, 0x0e, 0x6c, 0xbd, 0x36, 0x17, 0x3b, 0x88, 0xed, 0x99,
+	0x97, 0x2e, 0xc4, 0x87, 0xa4, 0x27, 0x33, 0x2f, 0x5d, 0x0a, 0x99, 0x9f, 0x9f, 0x97, 0xae, 0xc4,
+	0x90, 0xc4, 0x06, 0x16, 0x30, 0x06, 0x04, 0x00, 0x00, 0xff, 0xff, 0x94, 0x41, 0x27, 0x53, 0xa8,
+	0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -180,14 +262,6 @@ type ProtocolServer interface {
 	FetchProtocolInfo(context.Context, *ProtocolRequest) (*ProtocolRespond, error)
 }
 
-// UnimplementedProtocolServer can be embedded to have forward compatible implementations.
-type UnimplementedProtocolServer struct {
-}
-
-func (*UnimplementedProtocolServer) FetchProtocolInfo(ctx context.Context, req *ProtocolRequest) (*ProtocolRespond, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method FetchProtocolInfo not implemented")
-}
-
 func RegisterProtocolServer(s *grpc.Server, srv ProtocolServer) {
 	s.RegisterService(&_Protocol_serviceDesc, srv)
 }
@@ -217,6 +291,70 @@ var _Protocol_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FetchProtocolInfo",
 			Handler:    _Protocol_FetchProtocolInfo_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "protocol.proto",
+}
+
+// PingPongClient is the client API for PingPong service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type PingPongClient interface {
+	PingIng(ctx context.Context, in *Ping, opts ...grpc.CallOption) (*Pong, error)
+}
+
+type pingPongClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewPingPongClient(cc *grpc.ClientConn) PingPongClient {
+	return &pingPongClient{cc}
+}
+
+func (c *pingPongClient) PingIng(ctx context.Context, in *Ping, opts ...grpc.CallOption) (*Pong, error) {
+	out := new(Pong)
+	err := c.cc.Invoke(ctx, "/protocol.PingPong/PingIng", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// PingPongServer is the server API for PingPong service.
+type PingPongServer interface {
+	PingIng(context.Context, *Ping) (*Pong, error)
+}
+
+func RegisterPingPongServer(s *grpc.Server, srv PingPongServer) {
+	s.RegisterService(&_PingPong_serviceDesc, srv)
+}
+
+func _PingPong_PingIng_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Ping)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PingPongServer).PingIng(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protocol.PingPong/PingIng",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PingPongServer).PingIng(ctx, req.(*Ping))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _PingPong_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "protocol.PingPong",
+	HandlerType: (*PingPongServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "PingIng",
+			Handler:    _PingPong_PingIng_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -1,9 +1,12 @@
 package main
 
 import (
+	"github.com/redresseur/loggerservice/utils/ioutils"
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
+	"runtime"
 
 	implProtocol "github.com/redresseur/loggerservice/impl/protocol"
 	implV1 "github.com/redresseur/loggerservice/impl/v1"
@@ -15,7 +18,10 @@ import (
 // startHttpService 开启一个http服务，用于浏览日志
 func startHTTPService(httpServerAddr, rootPath string) {
 	go func() {
-		http.Handle("/logs", http.StripPrefix("/logs", http.FileServer(http.Dir(rootPath))))
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+		//http.Handle("/logs", http.StripPrefix("/logs", http.FileServer(http.Dir(rootPath))))
+		http.Handle("/", http.FileServer(http.Dir(rootPath)))
 		http.ListenAndServe(httpServerAddr, nil)
 	}()
 }
@@ -30,9 +36,9 @@ func getConfig() (*implV1.LoggerSerivceConfV1, error) {
 	// }
 
 	defaultConf := implV1.LoggerSerivceConfV1{
-		GrpcServerAddr: ":10040",
+		GrpcServerAddr: ":10041",
 		HttpServerAddr: ":10030",
-		RootDir:        "/tmp/logger",
+		RootDir:        filepath.Join(ioutils.TempDir(), "logger"),
 		NetWork:        "tcp",
 	}
 
@@ -45,6 +51,9 @@ func main() {
 	protocolHandler := implProtocol.ProtocolServerImpl{}
 	implProtocol.RegistryProtocol(&protocolHandler, implV1.ProtocolVersion)
 	protocol.RegisterProtocolServer(loggerSrv, &protocolHandler)
+
+	pingPongHandler := implProtocol.PingPongImpl{}
+	protocol.RegisterPingPongServer(loggerSrv, &pingPongHandler)
 
 	conf, err := getConfig()
 	if err != nil {

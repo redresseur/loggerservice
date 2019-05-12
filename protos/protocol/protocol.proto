@@ -20,3 +20,15 @@ message ProtocolRespond{
 service Protocol{
     rpc FetchProtocolInfo(ProtocolRequest)returns(ProtocolRespond){}
 }
+
+message Ping{
+    int64 counter = 1;
+}
+
+message Pong{
+    int64 counter = 1;
+}
+
+service PingPong{
+    rpc PingIng(Ping)returns(Pong){}
+}

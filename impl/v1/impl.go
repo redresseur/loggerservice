@@ -3,6 +3,8 @@ package v1
 import (
 	"context"
 	"fmt"
+	"github.com/redresseur/loggerservice/common"
+	"github.com/redresseur/loggerservice/errors"
 	"os"
 	"path/filepath"
 	"sync"
@@ -40,7 +42,7 @@ func (ls *LoggerServerImplV1) loggerPath(path string) (string, error) {
 func (ls *LoggerServerImplV1) Registry(ctx context.Context, req *v1.ClientInfo) (*v1.Respond, error) {
 	// TODO :增加版本判断
 	if "" == req.GetClientId() {
-		return ErrorRespond(400, ErrorIDIsEmpty), nil
+		return ErrorRespond(400, errors.ErrorIDIsEmpty), nil
 	}
 
 	path, err := ls.loggerPath(req.GetClientId())
@@ -48,7 +50,7 @@ func (ls *LoggerServerImplV1) Registry(ctx context.Context, req *v1.ClientInfo) 
 		return ErrorRespond(500, err), nil
 	}
 
-	fileId := NewLogFileID(req.GetClientId())
+	fileId := common.NewLogFileID(req.GetClientId())
 	path = filepath.Join(path, fileId)
 
 	fd, err := os.Create(path)
@@ -56,15 +58,16 @@ func (ls *LoggerServerImplV1) Registry(ctx context.Context, req *v1.ClientInfo) 
 		return ErrorRespond(500, err), nil
 	}
 
-	loggerId := NewClientUUID()
+	loggerId := common.NewClientUUID()
 	logger := LoggerV1{
 		path:     path,
 		clientId: req.GetClientId(),
 		id:       loggerId,
 		fileId:   fileId,
-		File:     fd,
+		FileMutexIO: ioutils.NewFileMutexIO(false),
 	}
 
+	logger.Set(fd)
 	ls.files.Store(loggerId, &logger)
 
 	return RegistryRespond(loggerId), nil
@@ -74,7 +77,7 @@ func (ls *LoggerServerImplV1) Commit(ctx context.Context, message *v1.Message) (
 	// TODO :增加版本判断
 	var logger *LoggerV1
 	if v, isOK := ls.files.Load(message.GetLoggerId()); !isOK {
-		return ErrorRespond(400, ErrorLoggerIDIsNotValid), nil
+		return ErrorRespond(400, errors.ErrorLoggerIDIsNotValid), nil
 	} else {
 		logger = v.(*LoggerV1)
 	}

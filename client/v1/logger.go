@@ -5,11 +5,15 @@ import (
 	"errors"
 	"github.com/redresseur/loggerservice/protos/v1"
 	"io"
+	"os"
 )
 
 type LoggerIOV1 struct {
 	grpcClient v1.LoggerV1Client
 	ctx context.Context
+	writer *os.File
+	reader *os.File
+	module string
 }
 
 func NewLogger(client v1.LoggerV1Client, ctx context.Context) io.Writer {
@@ -52,3 +56,5 @@ func (io *LoggerIOV1)Accident(err error) error {
 
 	return nil
 }
+
+

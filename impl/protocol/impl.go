@@ -21,3 +21,14 @@ func (ps *ProtocolServerImpl) FetchProtocolInfo(ctx context.Context, req *protoc
 	rsp.SupportProtocol = append(rsp.SupportProtocol, ps.protocols...)
 	return &rsp, nil
 }
+
+type PingPongImpl struct {
+
+}
+
+func (pp *PingPongImpl)PingIng(ctx context.Context, req *protocol.Ping) (*protocol.Pong, error)  {
+	return &protocol.Pong{
+		Counter: req.Counter,
+	}, nil
+}
+

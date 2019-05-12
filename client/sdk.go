@@ -2,121 +2,142 @@ package client
 
 import (
 	"context"
-	"errors"
-	"io"
-
-	"github.com/golang/protobuf/proto"
 	clientV1 "github.com/redresseur/loggerservice/client/v1"
-	"github.com/redresseur/loggerservice/protos/protocol"
-	v1 "github.com/redresseur/loggerservice/protos/v1"
-	"google.golang.org/grpc"
+	_errors "github.com/redresseur/loggerservice/errors"
+	"io"
+	"os"
+	"time"
+)
+
+type LoggerType int32
+const (
+	// 发送到远端服务器
+	LoggerGrpc LoggerType = 1 << iota
+	// 本地直接写文件
+	LoggerLocal
+	// 直接打印到控制台
+	LoggerStd
+	// 优先缓存到内存，
+	// 再根据初始化时设置的
+	// 类型选择同步到本地或远端
+	// 注： 只是为了说明，没有实际意义
+	LoggerChannelIO
+	// 同时保存在本地 和远端服务器，
+	// 优先写入，再同步到远端服务器
+	// 注： 只是为了说明，没有实际意义
+	LoggerProductionIO
+)
+
+const (
+	ClientGrpcProtocol = 1.0
 )
 
 var (
-	sdkCtx, sdkCancle = context.WithCancel(context.Background())
-	protocolMatched   float32
-	loggerServerAddr  string
-	operators         = map[float32]func(string) (io.Writer, error){}
+	gSdkCtx, gSdkCancel = context.WithCancel(context.Background())
+	gOperators   = map[LoggerType]func(string) (io.Writer, error){}
+	gLoggerType  = LoggerLocal
 )
-
-const ClientProtocol = 1.0
 
 func init() {
-	operatorV1 := func(module string) (io.Writer, error) {
-		var res io.Writer
-		if connect, err := grpc.DialContext(sdkCtx, loggerServerAddr, grpc.WithInsecure()); err != nil {
-			return nil, err
-		} else {
-			ctx, _ := context.WithCancel(sdkCtx)
-			cc := v1.NewLoggerV1Client(connect)
-
-			clientInfo := v1.ClientInfo{
-				Version:  ClientProtocol,
-				ClientId: module,
-			}
-
-			if rsp, err := cc.Registry(sdkCtx, &clientInfo); err != nil {
-				return nil, err
-			} else {
-				if rsp.Status != 200 {
-					return nil, errors.New(string(rsp.Payload))
-				}
-
-				registryRsp := v1.RegistryRespond{}
-				proto.Unmarshal(rsp.Payload, &registryRsp)
-
-				ctx = context.WithValue(ctx, "LoggerUUID", registryRsp.LoggerId)
-
-			}
-
-			res = clientV1.NewLogger(cc, ctx)
-		}
-		return res, nil
+	if gLocalRootDir = os.Getenv("TEMP"); gLocalRootDir == ""{
+		gLocalRootDir = "/tmp"
 	}
 
-	operators[ClientProtocol] = operatorV1
+	gOperators[LoggerGrpc] = operatorGrpc
+	gOperators[LoggerLocal] = operatorLocal
+	gOperators[LoggerStd] = func(s string) (io.Writer, error) {
+		return os.Stdout, nil
+	}
 }
 
-// 版本协商
-func consensus(cc protocol.ProtocolClient) float32 {
-	rqs := protocol.ProtocolRequest{}
-	rqs.SupportProtocol = append(rqs.SupportProtocol, ClientProtocol)
-	if rsp, err := cc.FetchProtocolInfo(sdkCtx, &rqs); err != nil {
-		panic(err)
-		return -1
-	} else {
-		for _, v := range rsp.SupportProtocol {
-			if v == ClientProtocol {
-				return ClientProtocol
-			}
-		}
-	}
+type SdkOption func()
 
-	return -1
+func WithLoggerServerAddr(grpcAddr string) SdkOption {
+	return func() {
+		gLoggerServerAddr = append(gLoggerServerAddr, grpcAddr)
+	}
 }
 
-var (
-	ErrorNoMatchProtocol = errors.New("don't found matched protocol")
-)
+func WithLocalRootDir(rootDir string)SdkOption  {
+	return func() {
+		gLocalRootDir = rootDir
+	}
+}
 
-func InitSDK(grpcAddr string) error {
-	//Setup1 协商Protocol
-	if connect, err := grpc.DialContext(sdkCtx, grpcAddr, grpc.WithInsecure()); err != nil {
-		return err
-	} else {
-		defer connect.Close()
-		cc := protocol.NewProtocolClient(connect)
-		if protocolMatched = consensus(cc); protocolMatched < 0 {
-			return ErrorNoMatchProtocol
-		}
+func WithLoggerType(loggerType2 LoggerType)SdkOption  {
+	return func() {
+		gLoggerType = loggerType2
+	}
+}
+
+func WithGrpcHeartTime(time time.Duration) SdkOption {
+	return func() {
+		gGrpcHeartTime = time
+	}
+}
+
+func InitSDK(options... SdkOption) error {
+	for _, op := range options{
+		op()
 	}
 
-	loggerServerAddr = grpcAddr
+	if len(gLoggerServerAddr) != 0{
+		return initGrpc()
+	}
+
 	return nil
 }
 
-type Accident func(error)
 
-func OpenLogger(module string) (io.Writer, error) {
-	if op, isOk := operators[protocolMatched]; isOk {
+func OpenChannelIoLogger(module string) (io.Writer, error){
+	if w, err := openLogger(module); err != nil{
+		return nil, err
+	}else {
+		return NewChannelIO(w, module), nil
+	}
+}
+
+func CloseLogger(writer io.Writer)  {
+	if ch, isOK := writer.(*channelIO); isOK {
+		ch.Close()
+	}
+}
+
+func openLogger(module string) (io.Writer, error) {
+	if op, isOk := gOperators[gLoggerType]; isOk {
 		return op(module)
 	}
 
-	return nil, ErrorNoMatchProtocol
+	return nil, _errors.ErrorNoMatchProtocol
 }
 
-func OpenAccident(writer io.Writer) func(error) error {
-	logger, isOK := writer.(*clientV1.LoggerIOV1)
-	if !isOK {
-		return nil
+type Accident func(error)error
+// OpenAccident 目前只有grpc 类型的Logger 支持此功能
+func OpenAccident(writer io.Writer) (Accident, error) {
+
+	if logger, isOK := writer.(*clientV1.LoggerIOV1); isOK {
+		return func(e error) error {
+			return logger.Accident(e)
+		}, nil
 	}
 
-	return func(e error) error {
-		return logger.Accident(e)
+	if logger, isOK := writer.(*channelIO); isOK {
+		if grpcLogger, isOK := logger.realWriter.(*clientV1.LoggerIOV1); isOK {
+			return func(e error) error {
+				return grpcLogger.Accident(e)
+			}, nil
+		}
 	}
 
+	return nil, _errors.ErrorFunctionNotSupported
 }
 
 func ReleaseSDK() {
-	sdkCancle()
+	// 一定要先结束生命周期
+	gSdkCancel()
+
+	releaseGrpc()
+	// 然后结束IO
+	//gChannelIO.Close()
+
 }
